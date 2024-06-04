@@ -183,7 +183,8 @@ void _SJF(Queue *ready_queue, GanttChart* gantt_chart, int preemptive) {
                 gantt_chart->gantt[gantt_chart->gantt_idx++] = p->pid;
                 current_time++;
                 // I/O interrupt 발생 시  
-                if(current_time == p->io_interrupt_time) {
+                if(current_time == p->io_interrupt_time && p->io_burst > 0) {
+                    enqueue(&waiting_queue, *p);
                     p->status = WAITING;
                 }
                 if (_IO_operation(ready_queue, &waiting_queue, current_time)) {
@@ -254,6 +255,11 @@ void _PRI(Queue *ready_queue, GanttChart* gantt_chart, int preemptive) {
             for (int j = 0; j < p->remaining_time; j++) {
                 gantt_chart->gantt[gantt_chart->gantt_idx++] = p->pid;
                 current_time++;
+                // I/O interrupt 발생 시  
+                if(current_time == p->io_interrupt_time && p->io_burst > 0) {
+                    enqueue(&waiting_queue, *p);
+                    p->status = WAITING;
+                }
                 if (_IO_operation(ready_queue, &waiting_queue, current_time)) {
                     break; 
                 }
