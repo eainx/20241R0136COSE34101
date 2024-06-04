@@ -394,7 +394,7 @@ int main() {
     printf("================================================\n");
 
 
-    evaluate(ready_queue.process_arr, num);
+    evaluate(process_arr, num);
 
     return 0;
 }
