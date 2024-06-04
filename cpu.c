@@ -12,7 +12,7 @@ void config(Queue* ready_queue, Queue* waiting_queue, GanttChart* gantt_chart) {
 
 
 // 알고리즘 선택
-void select(int sel) {
+void select_alg(int sel) {
     int time_quantum;
     int preemptive;
 
@@ -387,7 +387,7 @@ int main() {
         p.pid, p.arrival_time, p.cpu_burst, p.io_burst, p.priority, p.io_interrupt_time);}
     printf("================================================================\n");
 
-    select(sel);
+    select_alg(sel);
 
     printf("\n=================== RESULT =====================\n");
     printf("%-13s%-13s%-13s%-13s\n", "PID", "Remaining", "Start", "End");

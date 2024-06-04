@@ -26,7 +26,7 @@ GanttChart gantt_chart;
 Process process_arr[MAX_PROCESSES];
 
 void config(Queue* ready_queue, Queue* waiting_queue, GanttChart* gantt_chart);
-void select(int sel);
+void select_alg(int sel);
 void evaluate(Process process_arr[], int num);
 void IO_events(Queue* q, int* io_time);
 int _IO_operation(Queue* ready_queue, Queue* waiting_queue, int current_time);
