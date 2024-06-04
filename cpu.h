@@ -28,12 +28,12 @@ Process process_arr[MAX_PROCESSES];
 void config(Queue* ready_queue, Queue* waiting_queue, GanttChart* gantt_chart);
 void select(int sel);
 void evaluate(Process process_arr[], int num);
-void IO_events(Queue* q, int *io_times);
+void IO_events(Queue* q, int* io_time);
 int _IO_operation(Queue* ready_queue, Queue* waiting_queue, int current_time);
 
 void _FCFS(Queue* ready_queue, GanttChart* gantt_chart);
-void _SJF(Queue *ready_queue, int preemptive, GanttChart* gantt_chart);
-void _PRI(Queue *ready_queue, int preemptive, GanttChart* gantt_chart);
-void _RR(Queue *ready_queue, int time_quantum, GanttChart* gantt_chart);
+void _SJF(Queue *ready_queue, GanttChart* gantt_chart, int preemptive);
+void _PRI(Queue *ready_queue, GanttChart* gantt_chart, int preemptive);
+void _RR(Queue *ready_queue, GanttChart* gantt_chart, int time_quantum);
 
 #endif

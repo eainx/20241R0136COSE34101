@@ -7,7 +7,7 @@
 
 #define MAX_PROCESSES 100
 
-int io_times[2];
+int io_time;
 
 typedef struct {
     int gantt[1000];

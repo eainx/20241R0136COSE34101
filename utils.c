@@ -30,12 +30,10 @@ void print_gantt_chart(int gantt[], int n) {
     // Print I/O events row
     for (int i = 0; i < n; i++) {
         int io_event_found = 0;
-        for (int k = 0; k < 2; k++) {
-            if (i == io_times[k]) {
-                printf("%-5s", "I/O");
-                io_event_found = 1;
-                break;
-            }
+        if (i == io_time) {
+            printf("%-5s", "I/O");
+            io_event_found = 1;
+            break;
         }
         if (!io_event_found) {
             printf("     ");

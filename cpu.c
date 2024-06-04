@@ -22,24 +22,24 @@ void select(int sel) {
             break;
         case SJF:
             preemptive = 0;
-            _SJF(&ready_queue, preemptive, &gantt_chart);
+            _SJF(&ready_queue, &gantt_chart, preemptive);
             break;
         case PRI:
             preemptive = 0;
-            _PRI(&ready_queue, preemptive, &gantt_chart);
+            _PRI(&ready_queue, &gantt_chart, preemptive);
             break;
         case RR:
             printf("Enter time quantum for Round Robin: ");
             scanf("%d", &time_quantum);
-            _RR(&ready_queue, time_quantum, &gantt_chart);
+            _RR(&ready_queue, &gantt_chart, time_quantum);
             break;
         case PRE_SJF:
             preemptive = 1;
-            _SJF(&ready_queue, preemptive, &gantt_chart);
+            _SJF(&ready_queue, &gantt_chart, preemptive);
             break;
         case PRE_PRI:
             preemptive = 1;
-            _PRI(&ready_queue, preemptive, &gantt_chart);
+            _PRI(&ready_queue, &gantt_chart, preemptive);
             break;
         default:
             printf("Invalid selection. Please restart the program.\n");
@@ -47,17 +47,14 @@ void select(int sel) {
 }
 
 // IO operation 배열 만들기
-void IO_events(Queue* q, int *io_times) {
-    int j = 0;
-    for (int i = 0; i < 2; i++) {
-        for (; j < q->count; j++) {
-            if (q->process_arr[j].io_interrupt_time != 0 && q->process_arr[j].io_burst != 0) {
-                io_times[i] = q->process_arr[j].io_interrupt_time;
-                break;
-            }
+void IO_events(Queue* q, int* io_time) {
+    for (int j = 0; j < q->count; j++) {
+        if (q->process_arr[j].io_interrupt_time != 0 && q->process_arr[j].io_burst != 0) {
+            *io_time = q->process_arr[j].io_interrupt_time;
+            break;
         }
-        printf("\nI/O Event %d: %d\n", i + 1, io_times[i]);
     }
+    printf("\nI/O Event: %d\n", *io_time);
 }
 
 
@@ -103,7 +100,8 @@ void _FCFS(Queue* ready_queue, GanttChart* gantt_chart) {
                     current_time++;
 
                     // I/O interrupt 발생 시  
-                    if(current_time == p->io_interrupt_time) {
+                    if(current_time == p->io_interrupt_time && p->io_burst > 0) {
+                        enqueue(&waiting_queue, *p);
                         p->status = WAITING;
                     }
 
@@ -126,11 +124,10 @@ void _FCFS(Queue* ready_queue, GanttChart* gantt_chart) {
             current_time++;
         }
     }
-    print_gantt_chart(gantt_chart->gantt, gantt_chart->gantt_idx);
 }
 
 // SJF (Shortest Job First)
-void _SJF(Queue *ready_queue, int preemptive, GanttChart* gantt_chart) {
+void _SJF(Queue *ready_queue, GanttChart* gantt_chart, int preemptive) {
     int current_time = 0;
     int completed_process = 0;
 
@@ -185,6 +182,10 @@ void _SJF(Queue *ready_queue, int preemptive, GanttChart* gantt_chart) {
             for (int j = 0; j < p->remaining_time; j++) {
                 gantt_chart->gantt[gantt_chart->gantt_idx++] = p->pid;
                 current_time++;
+                // I/O interrupt 발생 시  
+                if(current_time == p->io_interrupt_time) {
+                    p->status = WAITING;
+                }
                 if (_IO_operation(ready_queue, &waiting_queue, current_time)) {
                     break; 
                 }
@@ -197,11 +198,10 @@ void _SJF(Queue *ready_queue, int preemptive, GanttChart* gantt_chart) {
             process_arr[completed_process++] = *p;
         }
     }
-    print_gantt_chart(gantt_chart->gantt, gantt_chart->gantt_idx);
 }
 
 // PRIORITY
-void _PRI(Queue *ready_queue, int preemptive, GanttChart* gantt_chart) {
+void _PRI(Queue *ready_queue, GanttChart* gantt_chart, int preemptive) {
     int current_time = 0;
     int completed_processes = 0;
 
@@ -267,11 +267,10 @@ void _PRI(Queue *ready_queue, int preemptive, GanttChart* gantt_chart) {
         }
     }
 
-    print_gantt_chart(gantt_chart->gantt, gantt_chart->gantt_idx);
 }
 
 // Round Robin
-void _RR(Queue *ready_queue, int time_quantum, GanttChart* gantt_chart) {
+void _RR(Queue *ready_queue, GanttChart* gantt_chart, int time_quantum) {
     int current_time = 0;
     int completed_processes = 0;
     int total_processes = ready_queue->count;
@@ -331,7 +330,6 @@ void _RR(Queue *ready_queue, int time_quantum, GanttChart* gantt_chart) {
             current_time++;
         }
     }
-    print_gantt_chart(gantt_chart->gantt, gantt_chart->gantt_idx);
 }
 
 void evaluate(Process process_arr[], int num) {
@@ -373,7 +371,7 @@ int main() {
     
     total_time = create_process(&ready_queue, num);  // Create array of process pointers
     
-    IO_events(&ready_queue, io_times);
+    IO_events(&ready_queue, &io_time);
     
     printf("\n========================= PROCESS INFO =========================\n");
     printf("%-10s%-10s%-10s%-10s%-10s%-10s\n", "PID", "Arrival", "CPU", "I/O", "Priority", "Interrupt");
@@ -393,6 +391,7 @@ int main() {
         p.pid, p.remaining_time, p.start_time, p.end_time);}
     printf("================================================\n");
 
+    print_gantt_chart(gantt_chart.gantt, gantt_chart.gantt_idx);
 
     evaluate(process_arr, num);
 
