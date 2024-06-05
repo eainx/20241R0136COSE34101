@@ -32,8 +32,10 @@ void IO_events(Queue* q, int* io_time);
 int _IO_operation(Queue* ready_queue, Queue* waiting_queue, int current_time);
 
 void _FCFS(Queue* ready_queue, GanttChart* gantt_chart);
-void _SJF(Queue *ready_queue, GanttChart* gantt_chart, int preemptive);
-void _PRI(Queue *ready_queue, GanttChart* gantt_chart, int preemptive);
+void _SJF(Queue *ready_queue, GanttChart* gantt_chart);
+void _P_SJF(Queue *ready_queue, GanttChart* gantt_chart);
+void _PRI(Queue *ready_queue, GanttChart* gantt_chart);
+void _P_PRI(Queue *ready_queue, GanttChart* gantt_chart);
 void _RR(Queue *ready_queue, GanttChart* gantt_chart, int time_quantum);
 
 #endif
