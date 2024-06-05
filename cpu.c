@@ -247,8 +247,7 @@ void _PRI(Queue *ready_queue, GanttChart* gantt_chart) {
 
         for (int i = 0; i < ready_queue->count; i++) {
             Process *p = &ready_queue->process_arr[i];
-            if (p->arrival_time <= current_time && p->remaining_time > 0 && p->priority < highest_priority)
-            {
+            if (p->arrival_time <= current_time && p->remaining_time > 0 && p->priority < highest_priority) {
                 highest_priority = p->priority;
                 highest_index = i;
             }
@@ -304,8 +303,7 @@ void _P_PRI(Queue *ready_queue, GanttChart* gantt_chart) {
 
         for (int i = 0; i < ready_queue->count; i++) {
             Process *p = &ready_queue->process_arr[i];
-            if (p->arrival_time <= current_time && p->remaining_time > 0 && p->priority < highest_priority)
-            {
+            if (p->arrival_time <= current_time && p->remaining_time > 0 && p->priority < highest_priority) {
                 highest_priority = p->priority;
                 highest_index = i;
             }
@@ -349,14 +347,11 @@ void _RR(Queue *ready_queue, GanttChart* gantt_chart, int time_quantum) {
             continue; 
         }
 
-        int queue_count = ready_queue->count;
         int idle = 1;
 
-        for (int i = 0; i < queue_count; i++)
-        {
+        for (int i = 0; i < ready_queue->count; i++) {
             Process p = dequeue(ready_queue);
-            if (p.arrival_time <= current_time && p.remaining_time > 0)
-            {   
+            if (p.arrival_time <= current_time && p.remaining_time > 0) {   
                 // 도착한 프로세스 있음
                 idle = 0; 
                 if (p.start_time == -1) {
@@ -370,13 +365,13 @@ void _RR(Queue *ready_queue, GanttChart* gantt_chart, int time_quantum) {
                 for (int j = 0; j < time_slice; j++) {
                     gantt_chart->gantt[gantt_chart->gantt_idx++] = p.pid;
                     current_time++;
-                    if (_IO_operation(ready_queue, &waiting_queue, current_time))
-                    {
+                    if (_IO_operation(ready_queue, &waiting_queue, current_time)) {
                         break; 
                     }
                 }
                 p.remaining_time -= time_slice;
 
+                // 프로세스가 끝나면
                 if (p.remaining_time == 0) {
                     p.end_time = current_time;
                     p.turnaround_time = p.end_time - p.arrival_time;
@@ -388,8 +383,9 @@ void _RR(Queue *ready_queue, GanttChart* gantt_chart, int time_quantum) {
                     enqueue(ready_queue, p);
                 }
             }
-            else
-            {
+            // 도착한 프로세스가 없으면
+            else {
+                // 다시 넣기
                 enqueue(ready_queue, p);
             }
         }
