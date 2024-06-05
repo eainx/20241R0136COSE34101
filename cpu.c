@@ -182,6 +182,7 @@ void _SJF(Queue *ready_queue, GanttChart* gantt_chart) {
     }
 }
 
+// Preemptive SJF (Shortest Job First)
 void _P_SJF(Queue *ready_queue, GanttChart* gantt_chart) {
     int current_time = 0;
     int completed = 0;
@@ -288,7 +289,7 @@ void _PRI(Queue *ready_queue, GanttChart* gantt_chart) {
 
 }
 
-// PRIORITY
+// Preemptive PRIORITY
 void _P_PRI(Queue *ready_queue, GanttChart* gantt_chart) {
     int current_time = 0;
     int completed = 0;
