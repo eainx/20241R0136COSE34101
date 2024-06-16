@@ -39,7 +39,7 @@ typedef struct {
     int count;
 } Queue;
 
-int create_process(Queue* q, int num);
+void create_process(Queue* q, int num);
 void initQueue(Queue* q);
 void enqueue(Queue* q, Process p);
 Process dequeue(Queue* q);

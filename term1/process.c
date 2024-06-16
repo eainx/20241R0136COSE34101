@@ -3,10 +3,9 @@
 /* 
     Process 
 */
-int create_process(Queue* q, int num) {
+void create_process(Queue* q, int num) {
     // random seed
     srand(time(NULL));
-    int total_time = 0;
     q->count = num;
     // initialization
     for (int i = 0; i < num; i++) {
@@ -29,9 +28,7 @@ int create_process(Queue* q, int num) {
         q->process_arr[i].io_interrupt_time = q->process_arr[i].io_burst > 0 ? rand() % 10 + 1 : 0;
         q->process_arr[i].waiting_time = 0;
         q->process_arr[i].turnaround_time = 0;
-        total_time += q->process_arr[i].cpu_burst;
     }
-    return total_time;
 }
 
 /* 
@@ -50,8 +47,7 @@ void enqueue(Queue* q, Process p) {
 // dequeue
 Process dequeue(Queue* q) {
     Process p = q->process_arr[0];
-    for (int i = 0; i < q->count - 1; i++)
-    {
+    for (int i = 0; i < q->count - 1; i++) {
         q->process_arr[i] = q->process_arr[i + 1];
     }
     q->count--;

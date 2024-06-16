@@ -7,7 +7,27 @@ void config(Queue* ready_queue, Queue* waiting_queue, GanttChart* gantt_chart) {
     initQueue(waiting_queue);
 
     // reset gantt chart
+    for (int i = 0; i < 1000; i++) {
+        gantt_chart->gantt[i] = -1;
+    }
     gantt_chart->gantt_idx = 0;
+
+    // process_arr
+    for (int i = 0; i < MAX_PROCESSES; i++) {
+        process_arr[i].pid = -1;  // 프로세스 ID 초기화
+        process_arr[i].priority = 0;
+        process_arr[i].cpu_burst = 0;
+        process_arr[i].io_burst = 0;
+        process_arr[i].arrival_time = 0;
+        process_arr[i].start_time = 0;
+        process_arr[i].end_time = 0;
+        process_arr[i].remaining_time = 0;
+        process_arr[i].io_interrupt_time = 0;
+        process_arr[i].status = 0;  // 프로세스 상태 초기화
+        process_arr[i].waiting_time = 0;
+        process_arr[i].turnaround_time = 0;
+        process_arr[i].in_ready_queue = 0;
+    }
 }
 
 
@@ -71,55 +91,108 @@ int _IO_operation(Queue* ready_queue, Queue* waiting_queue, int current_time) {
     return io_event_occurred;
 }
 
+// // FCFS (First Come First Served)
+// void _FCFS_v1(Queue* ready_queue, GanttChart* gantt_chart) {
+//     int current_time = 0;
+//     int completed = 0;
+//     int total = ready_queue->count;
+
+//     while (completed < total) {
+//         if (_IO_operation(ready_queue, &waiting_queue, current_time)) {
+//             continue;
+//         }
+
+//         int found_process = 0;
+
+//         for (int i = 0; i < total; i++) {
+//             Process *p = &ready_queue->process_arr[i];
+//             if (p->arrival_time <= current_time && p->remaining_time > 0) {   
+//                 found_process = 1;
+                
+//                 if (p->start_time == -1) {
+//                     p->start_time = current_time;
+//                 }
+
+//                 for (int j = 0; j < p->remaining_time; j++) {
+//                     gantt_chart->gantt[gantt_chart->gantt_idx++] = p->pid;
+//                     current_time++;
+
+//                     // I/O interrupt 발생 시  
+//                     if(current_time == p->io_interrupt_time && p->io_burst > 0) {
+//                         enqueue(&waiting_queue, *p);
+//                         p->status = WAITING;
+//                         break;
+//                     }
+
+//                     // I/O interrupt 탐색
+//                     if (_IO_operation(ready_queue, &waiting_queue, current_time)){
+//                         break;
+//                     }
+//                 }
+//                 p->remaining_time = 0;
+//                 p->end_time = current_time;
+//                 p->turnaround_time = p->end_time - p->arrival_time;
+//                 p->waiting_time = p->turnaround_time - p->cpu_burst;
+//                 p->status = TERMINATED;
+//                 process_arr[completed++] = *p;
+//                 break;
+//             }
+//         }
+//         if (!found_process) {
+//             gantt_chart->gantt[gantt_chart->gantt_idx++] = -1;
+//             current_time++;
+//         }
+//     }
+// }
+
 // FCFS (First Come First Served)
 void _FCFS(Queue* ready_queue, GanttChart* gantt_chart) {
     int current_time = 0;
     int completed = 0;
+    int total = ready_queue->count;
 
     while (completed < ready_queue->count) {
-        if (_IO_operation(ready_queue, &waiting_queue, current_time)) {
-            continue;
-        }
 
         int found_process = 0;
 
-        for (int i = 0; i < ready_queue->count; i++) {
+        int m_arrival_time = 10000;
+        int arrival_index = -1;
+
+        // 가장 빠른 arrival time 찾기
+        for (int i = 0; i < total; i++) {
             Process *p = &ready_queue->process_arr[i];
-            if (p->arrival_time <= current_time && p->remaining_time > 0) {   
-                found_process = 1;
-                
-                if (p->start_time == -1) {
-                    p->start_time = current_time;
-                }
-
-                for (int j = 0; j < p->remaining_time; j++) {
-                    gantt_chart->gantt[gantt_chart->gantt_idx++] = p->pid;
-                    current_time++;
-
-                    // I/O interrupt 발생 시  
-                    if(current_time == p->io_interrupt_time && p->io_burst > 0) {
-                        enqueue(&waiting_queue, *p);
-                        p->status = WAITING;
-                    }
-
-                    // I/O interrupt 탐색
-                    if (_IO_operation(ready_queue, &waiting_queue, current_time)){
-                        break;
-                    }
-                }
-                p->remaining_time = 0;
-                p->end_time = current_time;
-                p->turnaround_time = p->end_time - p->arrival_time;
-                p->waiting_time = p->turnaround_time - p->cpu_burst;
-                p->status = TERMINATED;
-                process_arr[completed++] = *p;
-                break;
+            if (p->arrival_time <= current_time && p->remaining_time > 0 && p->arrival_time < m_arrival_time) {
+                m_arrival_time = p->arrival_time;
+                arrival_index = i;
             }
         }
-        if (!found_process) {
+
+        // 아직 도착한 프로세스 없음
+        if (arrival_index == -1) {
             gantt_chart->gantt[gantt_chart->gantt_idx++] = -1;
             current_time++;
+            continue;
         }
+
+        Process *p = &ready_queue->process_arr[arrival_index];
+
+        // 처음 도착한 프로세스일 시
+        if (p->start_time == -1) {
+            p->start_time = current_time;
+        }
+
+        // 하나의 프로세스 진행
+        for (int j = 0; j < p->remaining_time; j++) {
+            gantt_chart->gantt[gantt_chart->gantt_idx++] = p->pid;
+            current_time++;
+        }
+        
+        p->remaining_time = 0;
+        p->end_time = current_time;
+        p->turnaround_time = p->end_time - p->arrival_time;
+        p->waiting_time = p->turnaround_time - p->cpu_burst;
+        p->status = TERMINATED;
+        process_arr[completed++] = *p;
     }
 }
 
@@ -419,7 +492,6 @@ void evaluate(Process process_arr[], int num) {
 int main() {
     int sel;
     int num;
-    int total_time = 0;
 
     printf("Welcome to the CPU Scheduler Simulation!\n");
     printf("1 - FCFS (First-Come, First-Served)\n");
@@ -432,12 +504,17 @@ int main() {
     scanf("%d", &sel);
     printf("Enter the number of processes (MAX: 100): ");
     scanf("%d", &num);
+
+    // Queue NewQueue;
     
     config(&ready_queue, &waiting_queue, &gantt_chart);
     
-    total_time = create_process(&ready_queue, num);  // Create array of process pointers
+    create_process(&ready_queue, num);  // Create array of process pointers
+    // create_process(&NewQueue, num);  // Create array of process pointers
+    // ready_queue = NewQueue;
     
     IO_events(&ready_queue, &io_time);
+
     
     printf("\n========================= PROCESS INFO =========================\n");
     printf("%-10s%-10s%-10s%-10s%-10s%-10s\n", "PID", "Arrival", "CPU", "I/O", "Priority", "Interrupt");
@@ -446,8 +523,27 @@ int main() {
         printf("%-10d%-10d%-10d%-10d%-10d%-10d\n", 
         p.pid, p.arrival_time, p.cpu_burst, p.io_burst, p.priority, p.io_interrupt_time);}
     printf("================================================================\n");
-
+    char* alg_list[] = {"FCFS", "SJF", "PRI", "RR", "PRE_SJF", "PRE_PRI"};
     select_alg(sel);
+    // for (int j = 1; j <= 6; j++) {
+    //     printf("\n+++++++++++++++++++++++++%s+++++++++++++++++++++++++\n", alg_list[j-1]);
+    //     select_alg(j);
+    //     printf("\n=================== RESULT =====================\n");
+    //     printf("%-13s%-13s%-13s%-13s\n", "PID", "Remaining", "Start", "End");
+    //     for (int i = 0; i < num; i++) {
+    // //         Process p = process_arr[i];
+    //         printf("%-13d%-13d%-13d%-13d\n", 
+    //         p.pid, p.remaining_time, p.start_time, p.end_time);}
+    //     printf("================================================\n");
+
+    //     print_gantt_chart(gantt_chart.gantt, gantt_chart.gantt_idx);
+
+    //     evaluate(process_arr, num);
+
+    //     config(&ready_queue, &waiting_queue, &gantt_chart);
+    //     ready_queue = NewQueue;
+
+    // }
 
     printf("\n=================== RESULT =====================\n");
     printf("%-13s%-13s%-13s%-13s\n", "PID", "Remaining", "Start", "End");
